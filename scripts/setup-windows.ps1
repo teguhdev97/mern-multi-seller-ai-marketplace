@@ -94,13 +94,14 @@ for ($attempt = 0; $attempt -lt 60; $attempt++) {
     # Do not use `sh -c` here. PowerShell can alter nested quotes before they
     # reach the container, turning the readiness SQL into an invalid command.
     # mysqladmin returns success only after MySQL accepts authenticated TCP
-    # connections with the same application account used by the backend.
-    & podman exec $container mysqladmin `
+    # connections with the same application account used by the backend. Use
+    # MYSQL_PWD within the container rather than a password argument so
+    # PowerShell does not receive mysqladmin's security warning on stderr.
+    & podman exec --env "MYSQL_PWD=$password" $container mysqladmin `
         --protocol=TCP `
         --host=127.0.0.1 `
         --user=marketplace_app `
-        "--password=$password" `
-        ping --silent 2>$null | Out-Null
+        ping --silent *> $null
     if ($LASTEXITCODE -eq 0) {
         $ready = $true
         break
