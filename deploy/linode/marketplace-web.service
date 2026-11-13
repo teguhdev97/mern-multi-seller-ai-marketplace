@@ -1,0 +1,16 @@
+[Unit]
+Description=Marketplace React Router
+After=network.target
+
+[Service]
+User=marketplace
+WorkingDirectory=/opt/marketplace/frontend
+Environment=NODE_ENV=production
+Environment=HOST=127.0.0.1
+Environment=PORT=3000
+ExecStart=/usr/bin/env node /opt/marketplace/frontend/node_modules/@react-router/serve/bin.cjs /opt/marketplace/frontend/build/server/index.js
+Restart=on-failure
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target
