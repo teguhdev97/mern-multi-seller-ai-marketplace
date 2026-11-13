@@ -91,7 +91,16 @@ switch ($LASTEXITCODE) {
 
 $ready = $false
 for ($attempt = 0; $attempt -lt 60; $attempt++) {
-    & podman exec $container sh -c 'MYSQL_PWD=$MYSQL_PASSWORD mysql --protocol=TCP -h 127.0.0.1 -u "$MYSQL_USER" "$MYSQL_DATABASE" -e "SELECT 1" >/dev/null 2>&1'
+    # Do not use `sh -c` here. PowerShell can alter nested quotes before they
+    # reach the container, turning the readiness SQL into an invalid command.
+    # mysqladmin returns success only after MySQL accepts authenticated TCP
+    # connections with the same application account used by the backend.
+    & podman exec $container mysqladmin `
+        --protocol=TCP `
+        --host=127.0.0.1 `
+        --user=marketplace_app `
+        "--password=$password" `
+        ping --silent *> $null
     if ($LASTEXITCODE -eq 0) {
         $ready = $true
         break
