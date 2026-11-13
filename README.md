@@ -2,28 +2,54 @@
 
 Adaptasi [proyek BensonRaro](https://github.com/BensonRaro/mernstack-ecommerce-multi-seller-marketplace/tree/403626bf350c32cf2b7033a486e76dd263ef21a2). Frontend memakai React Router. Backend memakai Express, TypeScript, Better Auth, dan MySQL melalui `mysql2`.
 
-## Menjalankan di lokal
+## Uji lokal di Windows
 
-Butuh Bun 1.4.4, Node.js 24, dan MySQL 8.0/8.4. Buat database kosong bernama `marketplace` dengan kolasi `utf8mb4_unicode_ci`. Salin `backend/.env.example` ke `backend/.env`, isi kredensial MySQL, dan buat `BETTER_AUTH_SECRET` dengan `openssl rand -hex 32`.
+Gunakan PowerShell, Git, Podman dengan machine yang sudah dibuat, Bun 1.4.4, dan Node.js 24. MySQL 8.4 berjalan di Podman dengan volume lokal dan koneksi `127.0.0.1:3308`. Frontend dan API berjalan langsung di Windows.
 
-```bash
-cd backend
-bun install --frozen-lockfile
-bun run db:migrate
+```powershell
+git clone https://github.com/teguhdev97/mern-multi-seller-ai-marketplace.git
+Set-Location mern-multi-seller-ai-marketplace
+podman machine list
+# Jalankan jika machine masih berhenti.
+podman machine start
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\setup-windows.ps1
+```
+
+Jika repo sudah di-clone, masuk ke folder repo dan jalankan `git pull --ff-only` terlebih dahulu. Script membuat `backend/.env` dengan kredensial acak untuk database lokal, menunggu MySQL siap, menjalankan migrasi, dan memasang dependensi kedua aplikasi. Simpan file tersebut selama volume database masih digunakan.
+
+**Terminal 1**, dari root repo:
+
+```powershell
+Set-Location backend
 bun run dev
 ```
 
-Di terminal kedua, dari root repo:
+**Terminal 2**, dari root repo:
 
-```bash
-cd frontend
-bun install --frozen-lockfile
+```powershell
+Set-Location frontend
 bun run dev
 ```
 
-Buka [localhost:5173](http://localhost:5173). Vite meneruskan `/api/*` ke backend pada port 5000. Cek database melalui [localhost:5173/health](http://localhost:5173/health).
+Buka [localhost:5173](http://localhost:5173). Cek [localhost:5173/health](http://localhost:5173/health) dan pastikan respons memuat `"database":"ready"`. Akun email/password, katalog, dan checkout COD bisa diuji dengan konfigurasi dasar ini. Integrasi eksternal menggunakan konfigurasi opsional di `backend/.env.example`.
+
+Untuk mencoba dashboard admin, daftar dulu di UI, lalu buka klien MySQL. Masukkan nilai `DB_PASSWORD` dari `backend/.env` saat diminta.
+
+```powershell
+podman exec -it marketplace-mysql-local mysql -u marketplace_app -p marketplace
+```
+
+```sql
+UPDATE `user` SET role = 'admin' WHERE email = 'EMAIL_AKUN_LOKAL';
+```
+
+Login ulang sebagai admin. Daftarkan akun kedua sebagai seller, setujui lewat dashboard admin, dan buat produk aktif. Gunakan akun pembeli untuk mencoba checkout COD.
+
+Setelah selesai, tekan Ctrl+C di kedua terminal aplikasi dan jalankan `podman stop marketplace-mysql-local`. Jalankan kembali script setup untuk melanjutkan pengujian dengan data yang sudah ada.
 
 ## Deploy di Linode
+
+Bagian ini untuk tahap setelah pengujian lokal.
 
 Instruksi ini menjalankan frontend, API, dan MySQL pada VPS yang sama. Caddy menyediakan HTTPS dan meneruskan `/api/*` ke Express. Pakai domain marketplace dan arahkan DNS ke VPS. Jika sudah ada reverse proxy, tambahkan rute yang sama pada proxy tersebut.
 
