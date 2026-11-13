@@ -11,15 +11,11 @@ const statement = {
 export const ac = createAccessControl(statement);
 
 export const buyer = ac.newRole({
-  user: ["get", "update"],
-  session: ["list", "revoke"],
   product: ["read"],
   order: ["create", "read"],
 });
 
 export const seller = ac.newRole({
-  user: ["get", "update"],
-  session: ["list", "revoke"],
   product: ["create", "read", "update", "delete"],
   order: ["read", "update"],
   category: ["read"],

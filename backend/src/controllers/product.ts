@@ -13,19 +13,7 @@ import {
   joinSql,
 } from "../db/pool.js";
 import type { Seller, Product, OrderItem, Review } from "../db/models.js";
-import { UTApi } from "uploadthing/server";
 import type { Request, Response } from "express";
-
-const utapi = new UTApi();
-
-function extractFileKey(url: string): string | null {
-  try {
-    const parts = url.split("/");
-    return parts[parts.length - 1] || null;
-  } catch {
-    return null;
-  }
-}
 
 const VALID_CATEGORIES = [
   "fashion",
@@ -829,12 +817,10 @@ export async function updateProduct(req: Request, res: Response) {
     }
 
     if (existing.status === "rejected") {
-      return res
-        .status(403)
-        .json({
-          error:
-            "This product has been rejected by an admin and cannot be edited. Please contact support for details.",
-        });
+      return res.status(403).json({
+        error:
+          "This product has been rejected by an admin and cannot be edited. Please contact support for details.",
+      });
     }
 
     if (
@@ -936,20 +922,10 @@ export async function deleteProduct(req: Request, res: Response) {
     }
 
     if (existing.status === "rejected") {
-      return res
-        .status(403)
-        .json({
-          error:
-            "This product has been rejected by an admin and cannot be deleted. Please contact support for details.",
-        });
-    }
-
-    const fileKeys = existing.images
-      .map(extractFileKey)
-      .filter((k): k is string => k !== null);
-
-    if (fileKeys.length > 0) {
-      await utapi.deleteFiles(fileKeys);
+      return res.status(403).json({
+        error:
+          "This product has been rejected by an admin and cannot be deleted. Please contact support for details.",
+      });
     }
 
     await write(sql`DELETE p FROM product p WHERE p.id = ${id}`);

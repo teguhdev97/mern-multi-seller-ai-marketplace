@@ -1,14 +1,14 @@
 marketplace.example.com {
-  encode zstd gzip
+	encode zstd gzip
 
-  @backend path /api /api/* /health
-  handle @backend {
-    reverse_proxy 127.0.0.1:5000 {
-      flush_interval -1
-    }
-  }
+	@backend path /api /api/* /health
+	handle @backend {
+		reverse_proxy 127.0.0.1:5000 {
+			flush_interval -1
+		}
+	}
 
-  handle {
-    reverse_proxy 127.0.0.1:3000
-  }
+	handle {
+		reverse_proxy 127.0.0.1:3000
+	}
 }
