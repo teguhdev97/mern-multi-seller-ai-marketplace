@@ -100,7 +100,7 @@ for ($attempt = 0; $attempt -lt 60; $attempt++) {
         --host=127.0.0.1 `
         --user=marketplace_app `
         "--password=$password" `
-        ping --silent *> $null
+        ping --silent 2>$null | Out-Null
     if ($LASTEXITCODE -eq 0) {
         $ready = $true
         break
